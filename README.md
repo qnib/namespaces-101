@@ -77,6 +77,10 @@ Compiling and running this piece of software is going to clone a child process t
 vagrant@lucid32:/vagrant$ gcc -Wall -o template src/main-0-template.c && ./template
  - Hello ?
  - World !
+vagrant@lucid32:/vagrant$ #now we are inside of the bash that is spawned by the child.
+vagrant@lucid32:/vagrant$ exit
+exit
+vagrant@lucid32:/vagrant$ # back to the parent again
 ```
 
 ## UTS Namespace
