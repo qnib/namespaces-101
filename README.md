@@ -85,3 +85,49 @@ vagrant@lucid32:/vagrant$ # back to the parent again
 
 ## UTS Namespace
 
+Ok, as we have our sceleton setup, let's use the first namespace. The template is changed slightly:
+```
+$ git diff src/main-0-template.c
+diff --git a/src/main-0-template.c b/src/main-0-template.c
+index de1a897..2f0876a 100644
+--- a/src/main-0-template.c
++++ b/src/main-0-template.c
+@@ -17,6 +17,7 @@ char* const child_args[] = {
+ int child_main(void* arg)
+ {
+   printf(" - World !\n");
++  sethostname("In Namespace", 12);
+   execv(child_args[0], child_args);
+   printf("Ooops\n");
+   return 1;
+@@ -25,7 +26,8 @@ int child_main(void* arg)
+ int main()
+ {
+   printf(" - Hello ?\n");
+-  int child_pid = clone(child_main, child_stack+STACK_SIZE, SIGCHLD, NULL);
++  int child_pid = clone(child_main, child_stack+STACK_SIZE, CLONE_NEWUTS | SIGCHLD, NULL);
+   waitpid(child_pid, NULL, 0);
+   return 0;
+ }
+```
+
+If we now compile and run it, we will get another UTS namespace, therefore a different hostname then the parent.
+```
+vagrant@lucid32:/vagrant$ gcc -Wall -o bin/uts src/main-0-template.c && sudo ./bin/uts
+ - Hello ?
+ - World !
+root@In Namespace:/vagrant# hostname
+In Namespace
+root@In Namespace:/vagrant# exit
+exit
+vagrant@lucid32:/vagrant$
+```
+
+Similar examples can be found for all the other namespaces involved.
+
+- [Introduction to Linux namespaces – Part 1: UTS](https://blog.jtlebi.fr/2013/12/28/introduction-to-linux-namespaces-part-2-ipc/) (From which this inherits)
+- [Introduction to Linux namespaces – Part 2: IPC](https://blog.jtlebi.fr/2013/12/28/introduction-to-linux-namespaces-part-2-ipc/)
+- [Introduction to Linux namespaces – Part 3: PID](https://blog.jtlebi.fr/2014/01/05/introduction-to-linux-namespaces-part-3-pid/)
+- [Introduction to Linux namespaces – Part 4: NS (FS)](https://blog.jtlebi.fr/2014/01/12/introduction-to-linux-namespaces-part-4-ns-fs/)
+- [Introduction to Linux namespaces – Part 5: NET](https://blog.jtlebi.fr/2014/01/19/introduction-to-linux-namespaces-part-5-net/)
+- [Introduction to Linux namespaces – Part 6: USER]() This one is missing... AFAIK the namespace is not stable yet :(
